@@ -139,9 +139,35 @@ shear_function = sp.interpolate.interp1d(Y,shear_lst,kind='cubic',fill_value="ex
 torque_function = sp.interpolate.interp1d(Y,torque_lst,kind='cubic',fill_value="extrapolate")
 moment_function = sp.interpolate.interp1d(Y,moment_lst,kind='cubic',fill_value="extrapolate")
 
+t1 = 0.007
+
+def solver(y):
+    c1 = (0.2+0.2001)*chord(y)/top_bottom_thickness + left_sparheight(y)/ + (left_sparheight(y)+right_sparheight(y))/(2*t1)
+    c2 = -(left_sparheight(y)+right_sparheight(y))/(2*t1)
+    c3 = -0.2*chord(y)*G*(3*left_sparheight(y)+right_sparheight(y))/2
+    c4 = (left_sparheight(y)+right_sparheight(y))/(2*t1)
+    c5 = (0.2+0.2001)*chord(y)/top_bottom_thickness + right_sparheight(y)/ - (left_sparheight(y)+right_sparheight(y))/(2*t1)
+    c6 = -0.2*chord(y)*G*(3*right_sparheight(y)+left_sparheight(y))/2
+    c7 = (left_sparheight(y) + (left_sparheight(y)+right_sparheight(y))/2)*0.2*chord(y)
+    c8 = (right_sparheight(y) + (left_sparheight(y)+right_sparheight(y))/2)*0.2*chord(y)
+    c9 = 0
+    matrix = np.array([[c1, c2, c3],
+                   [c4, c5, c6],
+                   [c7, c8, c9]])
+    righthandside = np.array([0., 0., torque_function(y)])
+    solution = np.linalg.solve(matrix, righthandside)
+    #print (solution)
+    return float(solution[2])
+    
+for i in range (33):
+    print(solver(i))
+
+twist_angle = integrate.quad(solver, 0, b/2)
+print ("The twist angle for a 3-spar design is: ", 180*twist_angle[0]/np.pi)
+
 #twist angle
 twist_angle = integrate.quad(lambda y:  torque_function(y) / (J(y) * G), 0, b/2 )
-print("The twist angle is: ", twist_angle[0]*180/np.pi)
+print("The twist angle for a 2-spar design is: ", twist_angle[0]*180/np.pi)
 print("the estimated error is: ", twist_angle[1]*180/np.pi)
 
 
