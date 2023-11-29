@@ -17,7 +17,7 @@ def chord(y):
     return chord
 
 #Spar Area
-area_spar = float(input("Enter the area of spar point areas: "))
+#area_spar = float(input("Enter the area of spar point areas: "))
 
 #spar height
 def left_sparheight(y):
@@ -29,24 +29,30 @@ def right_sparheight(y):
     return right_sparheight
 
 #Get spar thickness
-def left_spart (y) :
-    left_spart = area_spar*chord**2 / left_sparheight(y)
-    return left_spart
+right_spart = float(input("what is the spar web thickness? "))
+left_spart = right_spart
 
-def right_spart (y) :
-    right_spart = area_spar*chord**2 / right_sparheight(y)
-    return right_spart
+#def left_spart (y) :
+    #left_spart = area_spar*chord(y)**2 / left_sparheight(y)
+    #return left_spart
 
+#def right_spart (y) :
+    #right_spart = area_spar*chord(y)**2 / right_sparheight(y)
+    #return right_spart
+
+#get spar number
+#n_spar = int(input("how many spars are in the wingbox? "))
 
 #Get top and bottom thickness
 top_bottom_thickness = float(input("what is the thickness of the top and bottom surfaces? "))
 
 #Polar Moment of Inertia Function 
 def J(y):
-    sum_s_t = (left_sparheight(y) / left_spart(y)) + (right_sparheight(y) / right_spart(y)) +  (0.40019 + 0.4) * chord(y)/top_bottom_thickness
+    sum_s_t = (left_sparheight(y) / left_spart) + (right_sparheight(y) / right_spart) +  (0.40019 + 0.4) * chord(y)/top_bottom_thickness
     internal_A = (right_sparheight(y) + left_sparheight(y))/2 * 0.4 * chord(y)
     J_value = 4*internal_A**2/sum_s_t
     return J_value
+
 
 
 
@@ -137,7 +143,7 @@ moment_function = sp.interpolate.interp1d(Y,moment_lst,kind='cubic',fill_value="
 twist_angle = integrate.quad(lambda y:  torque_function(y) / (J(y) * G), 0, b/2 )
 print("The twist angle is: ", twist_angle[0]*180/np.pi)
 print("the estimated error is: ", twist_angle[1]*180/np.pi)
-print("The right spar thickness is: ", right_spart(0))
+
 
 #twist angle vs spanwise location
 y_values = np.linspace(0, b/2, 100)
