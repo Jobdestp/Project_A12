@@ -143,11 +143,23 @@ Cl0lst = np.zeros(0)
 Cd0lst = np.zeros(0)
 Cm0lst = np.zeros(0)
 sw = 0
+fuel = 1
 
-CL_d = 0.37
-V = 120
+MTOW = 325100*9.81
+
+if fuel == 0:
+    MTOW -= 126800*9.81 #initially 139170
+
+plf = -1
+nlf = -1
+CL_d = -0.5
+L_plf = plf*MTOW
+L_nlf = nlf*MTOW
 rho = 1.225225
-thrust = 80000
+S = 435
+#V = 350
+thrust = 0
+moment_arm = 2.4 #from catia
 
 y_second_lst = [0, 33.226]
 clst = [10.23, 2.864]
@@ -187,7 +199,6 @@ with open('a0.txt', 'r') as fin:
                 lst2 = []
             if line.find('y-span') != -1:
                 sw = 1
-#print (a_i0lst)
 
 
 Cl0_y = sp.interpolate.interp1d(y0lst,Cl0lst,kind='cubic',fill_value="extrapolate")
@@ -243,40 +254,41 @@ Cm10_y = sp.interpolate.interp1d(y10lst,Cm10lst,kind='cubic',fill_value="extrapo
 
 a_lst = [0, 10]
 a_i_minilst = [0, 0]
-#print (a_i_minilist)
 
-#print(Cl0lst)
-#print(Cl10lst)
 
-def interpolate_lists(list1, list2, t):
+
     
-    """Linear interpolation between two lists.
+
+"""def interpolate_lists(list1, list2, t):
+    
+    Linear interpolation between two lists.
 
     Parameters:
     - list1, list2: Lists containing the same number of elements.
     - t: Interpolation parameter (between 0 and 1).
 
     Returns:
-    - Interpolated list."""
+    - Interpolated list.
     
     interpolated_list = [a + t * (b - a) for a, b in zip(list1, list2)]
-    return interpolated_list
+    return interpolated_list"""
 
-a_d = 180*np.arcsin((CL_d-CL0)*np.sin(10*np.pi/180)/(CL10-CL0))/np.pi #a_d stored in degrees
+#a_d = 180*np.arcsin((CL_d-CL0)*np.sin(10*np.pi/180)/(CL10-CL0))/np.pi #a_d stored in degrees
 
-def spanwise_distr_graphs(y):
+"""def spanwise_distr_graphs(y):
     Cl_d_y = Cl0_y(y) + (CL_d-CL0)*(Cl10_y(y)-Cl0_y(y))/(CL10-CL0)
     L_y = Cl_d_y*0.5*(V**2)*rho*c_y(y)
     a_i_a = interpolate_lists(a_i0_y(y), a_i10_y(y), a_d/10)
     Cd_d_y = Cl_d_y*np.pi*a_i_a/180
     D_y = Cd_d_y*0.5*(V**2)*rho*c_y(y)
     Cm_qc_d_y = Cm0_y(y) + (CL_d-CL0)*(Cm10_y(y)-Cm0_y(y))/(CL10-CL0)
-    M_qc_y = Cm_qc_d_y*0.5*(V**2)*rho*c_y(y)
-    M_04c_y = M_qc_y+0.15*L_y
+    M_qc_y = Cm_qc_d_y*0.5*(V**2)*rho*(c_y(y))**2
     N_y = L_y*np.cos(np.pi*a_d/180)+D_y*np.sin(np.pi*a_d/180)
     T_y = D_y*np.cos(np.pi*a_d/180)-L_y*np.sin(np.pi*a_d/180)
+    M_04c_y = M_qc_y+0.15*N_y
     W_y = 37.6*c_y(y)**1.5
-    return N_y, T_y, M_04c_y, W_y
+    W_f_y = 433.56*(c_y(y))**2
+    return N_y, T_y, M_04c_y, W_y"""
 
 def spanwise_distr_root_forces(y):
     Cl_d_y = Cl0_y(y) + (CL_d-CL0)*(Cl10_y(y)-Cl0_y(y))/(CL10-CL0)
@@ -288,45 +300,38 @@ def spanwise_distr_root_forces(y):
     Cd_d_y = Cl_d_y*np.pi*a_i_a_y(a_d)/180
     D_y = Cd_d_y*0.5*(V**2)*rho*c_y(y)
     Cm_qc_d_y = Cm0_y(y) + (CL_d-CL0)*(Cm10_y(y)-Cm0_y(y))/(CL10-CL0)
-    M_qc_y = Cm_qc_d_y*0.5*(V**2)*rho*c_y(y)
-    M_04c_y = M_qc_y+0.15*L_y
+    #Cm_qc_d_y = -0.1
+    M_qc_y = Cm_qc_d_y*0.5*(V**2)*rho*(c_y(y))**2
+    #print (M_qc_y)
     N_y = L_y*np.cos(np.pi*a_d/180)+D_y*np.sin(np.pi*a_d/180)
     T_y = D_y*np.cos(np.pi*a_d/180)-L_y*np.sin(np.pi*a_d/180)
-    #print (c_y(y))
-    W_y = 37.6*c_y(y)**1.5
-    #Mom = N_y*y
-    return N_y, T_y, M_qc_y, W_y#, Mom
+    M_04c_y = M_qc_y+0.15*N_y*c_y(y)
+    #print (M_04c_y)
+    W_y = 9.81*37.6*c_y(y)**1.5
+    W_f_y = 425.75204*(c_y(y))**2
+    return L_y, D_y, M_04c_y, W_y, W_f_y
 
 
-def N_distr(x):
-    N, T, M_qc, W = spanwise_distr_root_forces(x)
-    return N
+def L_distr(x):
+    L, D, M_04c, W, W_f = spanwise_distr_root_forces(x)
+    return L
 
-def T_distr(x):
-    N, T, M_qc, W = spanwise_distr_root_forces(x)
-    return T
+def D_distr(x):
+    L, D, M_04c, W, W_f = spanwise_distr_root_forces(x)
+    return D
 
 def W_distr(x):
-    N, T, M_qc, W = spanwise_distr_root_forces(x)
+    L, D, M_04c, W, W_f = spanwise_distr_root_forces(x)
     return W
 
-def M_qc_distr(x):
-    N, T, M_qc, W = spanwise_distr_root_forces(x)
-    return M_qc
-
-#def xcp(x):
-    
-
-def M_04c_distr(x, CL_d=0.37):
-    N, T, M_qc, W = spanwise_distr_root_forces(x)
-    Cl_d_y = Cl0_y(x) + (CL_d-CL0)*(Cl10_y(x)-Cl0_y(x))/(CL10-CL0)
-    L_y = Cl_d_y*0.5*(V**2)*rho*c_y(x)
-    M_04c = M_qc+0.15*L_y
+def M_04c_distr(x):
+    L, D, M_04c, W, W_f = spanwise_distr_root_forces(x)
     return M_04c
 
-#def Moment_distr(x):
-   # N, T, M_qc, W, Mom = spanwise_distr_root_forces(x)
-    #return Mom
+def W_f_distr(x):
+    L, D, M_04c, W, W_f = spanwise_distr_root_forces(x)
+    return W_f
+
     
 
 Y = np.linspace (0, 33.226, 50)
@@ -335,36 +340,38 @@ shear_axial = np.zeros(50)
 moment = np.zeros(50)
 torque = np.zeros(50)
 
-N, T, M_, W = spanwise_distr_graphs(Y)
+#CL_d = 2*L_plf/(rho*V**2*S)
+V = np.sqrt(abs(2*L_nlf/(rho*CL_d*S)))
+a_d = 180*np.arcsin((CL_d-CL0)*np.sin(10*np.pi/180)/(CL10-CL0))/np.pi
+#print (a_d, V)
 
 for i in range (49, -1, -1):
-    S_lift, err_S_lift = sp.integrate.quad(N_distr, Y[i], 33.226)
+    S_lift, err_S_lift = sp.integrate.quad(L_distr, Y[i], 33.226)
     S_weight, err_S_weight = sp.integrate.quad(W_distr, Y[i], 33.226)
-    S_axial, err_S_axial = sp.integrate.quad(T_distr, Y[i], 33.226)
-    S_normal = S_lift-S_weight*9.81
+    S_weight_fuel, err_S_weight_fuel = sp.integrate.quad(W_f_distr, Y[i], 33.226)
+    S_drag, err_S_drag = sp.integrate.quad(D_distr, Y[i], 33.226)
     Torque, err_Torque = sp.integrate.quad(M_04c_distr, Y[i], 33.226)
-    Cl_d_y = Cl0_y(Y[i]) + (CL_d-CL0)*(Cl10_y(Y[i])-Cl0_y(Y[i]))/(CL10-CL0)
-    L_y = Cl_d_y*0.5*(V**2)*rho*c_y(Y[i])
-    
-    a_d = 180*np.arcsin((CL_d-CL0)*np.sin(10*np.pi/180)/(CL10-CL0))/np.pi #a_d stored in degrees
-    a_i_minilst[0] = a_i0_y(Y[i])
-    a_i_minilst[1] = a_i10_y(Y[i])
-    a_i_a_y = sp.interpolate.interp1d(a_lst,a_i_minilst,kind='linear',fill_value="extrapolate")
-    Cd_d_y = Cl_d_y*np.pi*a_i_a_y(a_d)/180
 
-    D_y = Cd_d_y*0.5*(V**2)*rho*c_y(Y[i])
-    #Torque = Torque + L_y*0.15*c_y(Y[i])
-    #for j in range(49, i, -1):
-        #Moment, err_Moment = sp.integrate.quad(N_distr, Y[j], 33.226)
+    S_weight *= plf
+    S_weight_fuel *= plf
+    
+    if fuel == 1:
+        S_normal = (S_lift-S_weight-S_weight_fuel)*np.cos(np.pi*a_d/180)+S_drag*np.sin(np.pi*a_d/180)
+        S_axial = -(S_lift-S_weight-S_weight_fuel)*np.sin(np.pi*a_d/180)+S_drag*np.cos(np.pi*a_d/180)
+    else:
+        S_normal = (S_lift-S_weight)*np.cos(np.pi*a_d/180)+S_drag*np.sin(np.pi*a_d/180)
+        S_axial = -(S_lift-S_weight)*np.sin(np.pi*a_d/180)+S_drag*np.cos(np.pi*a_d/180)
+    
     shear_normal[i] = S_normal
     shear_axial[i] = S_axial
-    if Y[i] < 5.343:
-        shear_normal[i] -= 3028*9.81
-    if Y[i] < 11.63:
-        shear_normal[i] -= 9071*9.81
-        shear_axial[i] += thrust
-    #moment[i] = Moment
     torque[i] = Torque
+    if Y[i] < 5.343:#L/G
+        shear_normal[i] -= plf*3028*9.81*np.cos(np.pi*a_d/180)#L/G
+    if Y[i] < 11.63:#engine
+        shear_normal[i] -= plf*9630*9.81*np.cos(np.pi*a_d/180)#engine
+        shear_axial[i] += thrust*np.cos(np.pi*34.4/180)#thrust vector
+        torque[i] -= moment_arm*thrust*np.cos(np.pi*34.4/180)
+    
 
 def internal_normal_distr(x):
     internal_normal = sp.interpolate.interp1d(Y,shear_normal,kind='cubic',fill_value="extrapolate")
@@ -373,22 +380,32 @@ def internal_normal_distr(x):
 for i in range (49, -1, -1):
     Moment, err_Moment = sp.integrate.quad(internal_normal_distr, Y[i], 33.226)
     moment[i] = Moment
+    if Y[i] < 11.63:
+        moment[i] = moment[i] - thrust*moment_arm*np.sin(np.pi*34.4/180)
+        
+#print (shear_normal[0])
+#print (torque[0])
+#print (moment[0])
+#print (shear_axial[0])
 
-Mom, err_Mom = sp.integrate.quad(internal_normal_distr, 0, 33.226)
+#moment_function = sp.interpolate.interp1d(Y,moment,kind='cubic',fill_value="extrapolate")
+#print (moment)
 
-S_lift_root, err_S_lift_root = sp.integrate.quad(N_distr, 0, 33.226)
+with open('negative_OEW+Payload+fuel.txt', 'w') as fout:
+    for i in range(0, 50):
+        fout.write(f'{shear_normal[i]}\n')
+    for i in range(0, 50):
+        fout.write(f'{torque[i]}\n')
+    for i in range(0, 50):
+        fout.write(f'{moment[i]}\n')
 
-S_axial_root, err_S_axial_root = sp.integrate.quad(T_distr, 0, 33.226)
+s=0
+for i in range(33):
+    print 
+    print (M_04c_distr(i), c_y(i))
+    s+= M_04c_distr(i)
 
-S_weight_root, err_S_weight_root = sp.integrate.quad(W_distr, 0, 33.226)
-
-S_M_04c, err_S_M_qc = sp.integrate.quad(M_qc_distr, 0, 33.226)
-
-
-N, T, M_qc, W = spanwise_distr_graphs(Y)
-
-moment_function = sp.interpolate.interp1d(Y,moment,kind='cubic',fill_value="extrapolate")
-
+#print (s)
 
 plt.subplot(221)
 plt.plot(Y, shear_normal, color="black")
@@ -407,6 +424,7 @@ plt.plot(Y, torque, color="black")
 plt.title("Torque diagram at 0.4c")
 
 plt.show()
+
 
 
 #Olliver's part
