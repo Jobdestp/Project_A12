@@ -30,11 +30,11 @@ def right_sparheight(y):
 
 #Get spar thickness
 def left_spart (y) :
-    left_spart = 2*area_spar / left_sparheight(y)
+    left_spart = area_spar*chord**2 / left_sparheight(y)
     return left_spart
 
 def right_spart (y) :
-    right_spart = 2*area_spar / right_sparheight(y)
+    right_spart = area_spar*chord**2 / right_sparheight(y)
     return right_spart
 
 
