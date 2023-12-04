@@ -50,7 +50,7 @@ top_bottom_thickness = float(input("what is the thickness of the top and bottom 
 def J(y):
     sum_s_t = (left_sparheight(y) / left_spart) + (right_sparheight(y) / right_spart) +  (0.40019 + 0.4) * chord(y)/top_bottom_thickness
     internal_A = (right_sparheight(y) + left_sparheight(y))/2 * 0.4 * chord(y)
-    J_value = 4*internal_A**2/sum_s_t
+    J_value = 4*internal_A**2*G/sum_s_t
     return J_value
 
 
@@ -165,36 +165,51 @@ twist_angle = integrate.quad(solver, 0, b/2)
 print ("The twist angle for a 3-spar design is: ", 180*twist_angle[0]/np.pi)
 
 #twist angle
-twist_angle = integrate.quad(lambda y:  torque_function(y) / (J(y) * G), 0, b/2 )
+twist_angle = integrate.quad(lambda y:  torque_function(y) / (J(y)), 0, b/2 )
 print("The twist angle for a 2-spar design is: ", twist_angle[0]*180/np.pi)
 print("the estimated error is: ", twist_angle[1]*180/np.pi)
 
 
 #twist angle vs spanwise location
 y_values = np.linspace(0, b/2, 100)
-twist_values = [integrate.quad(lambda y: torque_function(y) *180/ (J(y) * G* np.pi), 0, y)[0] for y in y_values]
+twist_values_2spar = [integrate.quad(lambda y: torque_function(y) *180/ (J(y) *  np.pi), 0, y)[0] for y in y_values]
+twist_values_3spar = [integrate.quad(lambda y: solver(y) * 180 / np.pi, 0, y)[0] for y in y_values]
 
 J_values = [J(y) for y in y_values]
+threespar_torstional_stiffness = [torque_function(y)/solver(y) for y in y_values]
 
-#J Value plot
+#stiffness plot 2 spars
 plt.plot(y_values, J_values, label='J(y)')
-plt.xlabel('y')
-plt.ylabel('J(y)')
-plt.title('J(y) vs. y')
-plt.legend()
+plt.xlabel('Spanwise Location [m]')
+plt.ylabel('Torsional Stiffness $[Nm^2/rad]$')
+plt.legend(["2 Spar Configuration"])
 plt.grid(True)
 plt.show()
 
-#twist angle plot
+#stiffness plot 3 spars
+plt.plot(y_values, threespar_torstional_stiffness, label='J(y)')
+plt.xlabel('Spanwise Location [m]')
+plt.ylabel('Torsional Stiffness $[Nm^2/rad]$')
+plt.legend(["3 Spar Configuration"])
+plt.grid(True)
+plt.show()
+
+#twist angle plot 2 spars
    
-plt.plot(y_values, twist_values, label='Twist (y)')
-plt.xlabel('y')
-plt.ylabel('angle')
-plt.title('twist angle vs. y')
-plt.legend()
+plt.plot(y_values, twist_values_2spar, label='Twist (y)')
+plt.xlabel('Spanwise Location [m]')
+plt.ylabel('Angle [deg]')
+plt.legend(["2 Spar Configuration"])
 plt.grid(True)
 plt.show()
 
+#twist angle plot 3 spars
+plt.plot(y_values, twist_values_3spar, label='Twist (y)')
+plt.xlabel('Spanwise Location [m]')
+plt.ylabel('Angle [deg]')
+plt.legend(["3 Spar Configuration"])
+plt.grid(True)
+plt.show()
 
 
 
