@@ -66,7 +66,7 @@ sw = 0 for positive load factor, maximum shear case
 sw = 1 for positive load factor, maximum bending stress case
 sw = 2 for negative load factor, maximum shear and maximum bending stress case
 """
-sw = 0
+sw = 2
 
 
 if sw == 0:
@@ -139,7 +139,7 @@ shear_function = sp.interpolate.interp1d(Y,shear_lst,kind='cubic',fill_value="ex
 torque_function = sp.interpolate.interp1d(Y,torque_lst,kind='cubic',fill_value="extrapolate")
 moment_function = sp.interpolate.interp1d(Y,moment_lst,kind='cubic',fill_value="extrapolate")
 
-t1 = 0.007
+t1 = right_spart
 
 def solver(y):
     c1 = (0.2+0.2001)*chord(y)/top_bottom_thickness + left_sparheight(y)/ + (left_sparheight(y)+right_sparheight(y))/(2*t1)
@@ -159,8 +159,7 @@ def solver(y):
     #print (solution)
     return float(solution[2])
     
-for i in range (33):
-    print(solver(i))
+
 
 twist_angle = integrate.quad(solver, 0, b/2)
 print ("The twist angle for a 3-spar design is: ", 180*twist_angle[0]/np.pi)
