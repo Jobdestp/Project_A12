@@ -5,55 +5,43 @@
 import  sympy as sp
 import math
 
-length_1 = float(input('Enter the length of stringer segment: '))
-area = float(input('Enter the area of a single stringer: '))
-length_2 = float(input('Enter the length of the stringer: '))
 thickness = float(input('Enter the thickness of the stringer: '))
+ribs_spacing = float(input('Enter the ribs spacing in meters: '))
 area_of_cross_section = float(input("Enter the area of the L-shaped cross-section: "))
-user_specified_thickness = float(input("Enter the thickness of each side (t): "))
+wingspan = 33.225
 
 K = 1  # loading factor when the stringer is pinned at both ends
-A = area
-h = length_2
-l = length_1
 t = thickness
+l = ribs_spacing
+A = area_of_cross_section
 E = 68.9 * 10**9
 
+def stringer_length(t):
+    return (area_of_cross_section + t ** 2) / (2 * t)
 
+h = stringer_length(t)
 
-def calculate_dimensions(area, user_thickness):
-    # Define symbols
-    s, t = sp.symbols('s t', positive=True, real=True)
+def rib_length(r):
+    return wingspan / ribs_spacing
 
-    # Define the equation for the area with user-specified thickness
-    equation = sp.Eq((2 * s + user_thickness) * user_thickness, area)
-
-    # Solve the equation for s
-    solution = sp.solve(equation, s)
-
-    # Extract the value for s from the first tuple in the solution list
-    length = solution[0]
-
-    return length, user_thickness
-
-length, thickness = calculate_dimensions(area_of_cross_section, user_specified_thickness)
+result_rib = rib_length(ribs_spacing)
 
 def calculate_second_moment_of_inertia(t, h, A):
-    I = 1/(12) * h * t**3 + A * (t/2)**2 + 1/12 * t * (h - t)**3 + A * ((h - t)/2 + t)**2
-    return I
+    return (1/(12) * h * t**3 + A * (t/2)**2 + 1/12 * t * (h - t)**3 + A * ((h - t)/2 + t)**2)
 
 result_I = calculate_second_moment_of_inertia(t, h, A)
 
-print('The second moment of inertia of the stringer is:', result_I)
+I = result_I
 
 def calculate_column_buckling_stress(I, K, E, l, A):
-    sigma_buckling = (K * math.pi ** 2 * E * I) / (l ** 2 * A)
-    return sigma_buckling
+    return (K * math.pi ** 2 * E * I) / (l ** 2 * A)
 
-result_sigma = calculate_column_buckling_stress(result_I, K, E, l, A)
+result_sigma = calculate_column_buckling_stress(I, K, E, l, A)
 
-print('The critical column buckling stress is :', result_sigma)
-print(f"Length of each side: {length.evalf()}")
-print(f"Thickness: {thickness}")
+print('The second moment of inertia of the stringer is:', I)
+print('There are ', result_rib, 'ribs on one side of the wing')
+print('The critical column buckling stress is:', result_sigma)
+print('The height of stringer is: ', h)
+
 
 
