@@ -38,7 +38,7 @@ def h_rear(y):
     return rear_sparheight
 
 def h_middle(y):
-    middle_sparheight = (h_front(y) * (1-f) + h_rear(y) * f)/2
+    middle_sparheight = h_front(y) * (1-f) + h_rear(y) * f
     return middle_sparheight
 
 
