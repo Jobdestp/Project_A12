@@ -38,7 +38,7 @@ def h_rear(y):
     return rear_sparheight
 
 def h_middle(y):
-    middle_sparheight = h_front(y) * (1-f) + h_rear(y) * f
+    middle_sparheight = (h_front(y) * (1-f) + h_rear(y) * f)
     return middle_sparheight
 
 
@@ -196,7 +196,7 @@ for j in range(3):
     
     #print information
     if sw == 0:
-        print("The maximum shear stress due to sw", j, "is" , max(front_stress, key = abs), max(middle_stress, key = abs), max(rear_stress, key = abs), "MPa")
+        print("The maximum shear stress due to sw", j, "is" , max(front_stress, key = abs), max(middle_stress, key = abs), max(rear_stress, key = abs), max(skin_stress_q1, key = abs), max(skin_stress_q2, key = abs), "MPa")
 
         plt.plot(y_values, front_stress, label='Shear Stress')
         plt.xlabel('spanwise location [m]')
@@ -208,7 +208,7 @@ for j in range(3):
 
 
     elif sw == 2:
-        print("The minimum shear stress due to sw", j, "is" , max(front_stress, key = abs), max(middle_stress, key = abs), max(rear_stress, key = abs), "MPa")
+        print("The minimum shear stress due to sw", j, "is" , max(front_stress, key = abs), max(middle_stress, key = abs), max(rear_stress, key = abs), max(skin_stress_q1, key = abs), max(skin_stress_q2, key = abs), "MPa")
         plt.plot(y_values, front_stress, label='Shear Stress')
         plt.xlabel('spanwise location [m]')
         plt.ylabel('Shear Stress [MPa]')
@@ -218,7 +218,7 @@ for j in range(3):
         plt.show()
 
     else:
-        print("The maximum shear stress due to shear in sw", j, "is" , max(front_stress, key = abs), max(middle_stress, key = abs), max(rear_stress, key = abs), "MPa")
+        print("The maximum shear stress due to sw", j, "is" , max(front_stress, key = abs), max(middle_stress, key = abs), max(rear_stress, key = abs), max(skin_stress_q1, key = abs), max(skin_stress_q2, key = abs), "MPa")
         plt.plot(y_values, front_stress, label='Shear Stress')
         plt.xlabel('spanwise location [m]')
         plt.ylabel('Shear Stress [MPa]')
