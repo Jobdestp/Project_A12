@@ -14,7 +14,10 @@ K = 1  # loading factor when the stringer is pinned at both ends
 t = thickness
 l = ribs_spacing
 A = area_of_cross_section
+K_skin = 4
+v = 0.33
 E = 68.9 * 10**9
+sigma_tensile = 310 * 10 ** 6
 
 def stringer_length(t):
     return (area_of_cross_section + t ** 2) / (2 * t)
@@ -35,6 +38,7 @@ I = result_I
 
 def calculate_column_buckling_stress(I, K, E, l, A):
     return (K * math.pi ** 2 * E * I) / (l ** 2 * A)
+
 
 result_sigma = calculate_column_buckling_stress(I, K, E, l, A)
 
