@@ -8,7 +8,10 @@ Created on Wed Dec 13 17:00:21 2023
 import numpy as np
 import math
 
+#assumption ks = 5.4, function converges to this number
+
 b_w = 66.45150601  # span
+b_half = b_w/2.
 c_r = 10.229604  # root chord
 taper = 0.28  # taper ratio
 
@@ -26,45 +29,45 @@ y = np.array([0.0, 0.6768367346938775, 1.353673469387755, 2.0305102040816325, 2.
 def chord(y):
     return c_r - c_r * (1 - taper) / (b_w / 2) * y
 
-b_rib = float(input('Rib spacing: '))
+b_spar = float(input('spar height: '))
 t_spar = float(input('Thickness sparweb: '))
 
 E = 68.9 * 10**9
 v = 0.33
-lst_web_buckling_coefficient_left = []
-lst_web_buckling_coefficient_right = []
-lst_web_buckling_coefficient_mid = []
-lst_web_critical_stress_left = []
-lst_web_critical_stress_right = []
-lst_web_critical_stress_mid = []
+k_s = 5.4
+lst_web_critical_stress = []
+#lst_web_buckling_coefficient_left = []
+#lst_web_buckling_coefficient_right = []
+#lst_web_buckling_coefficient_mid = []
+#lst_web_critical_stress_left = []
+#lst_web_critical_stress_right = []
+#lst_web_critical_stress_mid = []
 
 for i in range(0, len(y)):
     # Length of a and b at different sections
-    a_right = 0.11369 * (c_r - c_r * ((1 - taper) / (b_w / 2)) * y[i])
-    a_left = 0.126607 * (c_r - c_r * ((1 - taper) / (b_w / 2)) * y[i])
-    a_mid = a_right + a_left / 2
-    b = b_rib
+    #b_right = 0.11369 * (c_r - c_r * ((1 - taper) / (b_w / 2)) * y[i])
+    #b_left = 0.126607 * (c_r - c_r * ((1 - taper) / (b_w / 2)) * y[i])
+    b = b_spar *(c_r - c_r * ((1 - taper) / (b_w / 2)) * y[i])
+    #b_mid = a_right + a_left / 2
+    #b = b_rib
 
     # Calculate aspect ratio and buckling coefficient
-    k_left = a_left / b
-    k_right = a_right / b
-    k_mid = a_mid / b
-    k_s_left = 5.34 + 4 / (k_left ** 2)
-    k_s_right = 5.34 + 4 / (k_right ** 2)
-    k_s_mid = 5.34 + 4 / (k_mid ** 2)
+    #k_left =  b_half / b
+    #k_right = b_half / b
+    #k_mid = b_half / b
+    #k_s_left = 5.34 + 4 / (k_left ** 2)
+    #k_s_right = 5.34 + 4 / (k_right ** 2)
+    #k_s_mid = 5.34 + 4 / (k_mid ** 2)
 
     # Calculate critical web buckling stress and skin buckling stress
-    web_critical_buckling_stress_left = ((math.pi ** 2 * k_s_left * E) / (12 * (1 - v ** 2))) * (t_spar / b) ** 2
-    web_critical_buckling_stress_right = ((math.pi ** 2 * k_s_right * E) / (12 * (1 - v ** 2))) * (t_spar / b) ** 2
-    web_critical_buckling_stress_mid = ((math.pi ** 2 * k_s_mid * E) / (12 * (1 - v ** 2))) * (t_spar / b) ** 2
-    lst_web_critical_stress_left.append(web_critical_buckling_stress_left)
-    lst_web_critical_stress_right.append(web_critical_buckling_stress_right)
-    lst_web_critical_stress_mid.append(web_critical_buckling_stress_mid)
-    lst_web_buckling_coefficient_left.append(k_s_left)
-    lst_web_buckling_coefficient_right.append(k_s_right)
-    lst_web_buckling_coefficient_mid.append(k_s_mid)
+    web_critical_buckling_stress = ((math.pi ** 2 * k_s * E) / (12 * (1 - v ** 2))) * (t_spar / b) ** 2
+    #web_critical_buckling_stress_right = ((math.pi ** 2 * k_s_right * E) / (12 * (1 - v ** 2))) * (t_spar / b) ** 2
+    #web_critical_buckling_stress_mid = ((math.pi ** 2 * k_s_mid * E) / (12 * (1 - v ** 2))) * (t_spar / b) ** 2
+    lst_web_critical_stress.append(web_critical_buckling_stress)
+    #lst_web_critical_stress_right.append(web_critical_buckling_stress_right)
+    #lst_web_critical_stress_mid.append(web_critical_buckling_stress_mid)
+    #lst_web_buckling_coefficient_left.append(k_s_left)
+    #lst_web_buckling_coefficient_right.append(k_s_right)
+    #lst_web_buckling_coefficient_mid.append(k_s_mid)
 
-print('The web critical buckling stress is: ', lst_web_critical_stress_mid, lst_web_critical_stress_right,
-      lst_web_critical_stress_left)
-print('The web buckling coefficient is: ', lst_web_buckling_coefficient_mid, lst_web_buckling_coefficient_left,
-      lst_web_buckling_coefficient_right)
+print('The web critical buckling stress is: ', lst_web_critical_stress)

@@ -9,9 +9,14 @@ import numpy as np
 #skin buckling
 import math
 
-b = 66.45150601     #span
+b_w = 66.45150601     #span
 c_r  = 10.229604    #root chord
 taper = 0.28        #taper ratio
+t = float(input('skin thickness:'))
+E = 68.9 * 10**9
+v = 0.33
+k_c = 4
+lst_skin_critical_stress = []
 
 y = np.array([0.0, 0.6768367346938775, 1.353673469387755, 2.0305102040816325, 2.70734693877551,
               3.384183673469388, 4.061020408163266, 4.737857142857144, 5.414693877551021, 6.091530612244898,
@@ -26,15 +31,17 @@ y = np.array([0.0, 0.6768367346938775, 1.353673469387755, 2.0305102040816325, 2.
 
 
 def chord(y):
-    chord = c_r - c_r * (1-taper) / (b/2) * y
+    chord = c_r - c_r * (1-taper) / (b_w/2) * y
     return chord 
 
+numberstringers = (float(input("# of stringers")))
 
-b_rib = (float(input("rib spacing in meters:")))
-t = float(input('skin thickness:'))
-E = 68.9 * 10**9
-v = 0.33
-k_c = 4
+for i in range(0, len(y)):
+    # Length of a and b at different sections
+    b_stringerspacing = 0.4 * (c_r - c_r * ((1 - taper) / (b_w / 2)) * y[i]) / (numberstringers + 1)
+
+
+
 #lst_aspect_ratio=[4]
 #lst_web_buckling_coefficient=[]
 #lst_skin_buckling_coefficient=[]
@@ -44,9 +51,10 @@ k_c = 4
     
 
 
-skin_critical_buckling_stress = ((math.pi ** 2 * k_c * E) / (12 * (1 - v ** 2))) * ( t / b_rib ) ** 2
+    skin_critical_stress = ((math.pi ** 2 * k_c * E) / (12 * (1 - v ** 2))) * ( t / b_stringerspacing ) ** 2
+    lst_skin_critical_stress.append(skin_critical_stress)
 
-print(skin_critical_buckling_stress)
+print(lst_skin_critical_stress)
 
 
 
