@@ -308,11 +308,92 @@ moi = interp1d(y, multiplied_moment_of_inertia, kind='cubic', fill_value="extrap
 #    return 1.89635163e+01 -8.21876437e-01*y + 8.90500562e-03*y**2
 #1.89635163e2 -8.21876437e1*y + 8.90500562e0*y**2
 
+# Define your functions here (moment_function, chord, moi)
+
 # Define the integrand function
 def bending_stress_function(y):
-    return moment_function(y)*max_distance*chord(y)/moi(y)
+    return moment_function(y) * max_distance * chord(y) / moi(y)
 
+# Allowable stress (you need to set this based on your design requirements)
+allowable_stress = 276000000  # Replace with the actual allowable stress value
+
+# Calculate the margin of safety
+margin_of_safety = allowable_stress / (bending_stress_function(y) * 1.5)  # With Safety factor
+
+# Find the minimum margin of safety (most critical location)
+min_margin_of_safety = np.min(margin_of_safety)
+
+# Plot the margin of safety
+plt.figure(figsize=(10, 6))
+
+# Plot margin of safety
+plt.plot(y, margin_of_safety, label='Margin of Safety', color='red')
+
+# Highlight the most critical location
+plt.scatter(y[np.argmin(margin_of_safety)], min_margin_of_safety, color='red', marker='o', label='Critical Point')
+
+# Add labels and legend
+plt.xlabel('Spanwise Location (m)')
+plt.ylabel('Margin of Safety')
+plt.xlim(-1, 35)
+plt.ylim(0, 5)
+plt.axhline(0, color='black', linewidth=0.5)  # Zero line
+plt.legend()
+plt.title('Margin of Safety along the Wing')
+
+# Show the plot
+plt.show()
+
+# Print the minimum margin of safety and its corresponding location
+print(f"Minimum Margin of Safety: {min_margin_of_safety}")
+print(f"Corresponding Location (y): {y[np.argmin(margin_of_safety)]}")
+
+# Initialize maxim before the loop
 maxim = 0
+
+# Second plot for lowest margin of safety every four meters
+plt.figure(figsize=(10, 6))
+
+# Calculate the lowest margin of safety for every four meters
+y_intervals = np.arange(0, 35, 4)
+min_margin_of_safety_intervals = []
+
+# Iterate over intervals
+for interval in y_intervals:
+    # Get the margin of safety within the interval
+    margin_in_interval = margin_of_safety[(y >= interval) & (y < interval + 4)]
+
+    # Find the maximum value within the interval
+    max_margin_in_interval = np.max(margin_in_interval)
+
+    # Update maxim if needed
+    if max_margin_in_interval > maxim:
+        maxim = max_margin_in_interval
+
+    # Append the minimum margin of safety within the interval
+    min_margin_of_safety_intervals.append(np.min(margin_in_interval))
+
+# Plot the lowest margin of safety for every four meters
+plt.plot(y_intervals, min_margin_of_safety_intervals, marker='o', linestyle='-', color='blue', label='Lowest Margin of Safety')
+
+# Add labels and legend
+plt.xlabel('Spanwise Location (m)')
+plt.ylabel('Lowest Margin of Safety')
+plt.xlim(-1, 35)
+plt.ylim(0, 5)
+plt.axhline(0, color='black', linewidth=0.5)  # Zero line
+plt.legend()
+plt.title('Lowest Margin of Safety every Four Meters')
+
+# Show the plot
+plt.show()
+
+# Print the minimum margin of safety and its corresponding location
+print(f"Minimum Margin of Safety: {min_margin_of_safety}")
+print(f"Corresponding Location (y): {y[np.argmin(margin_of_safety)]}")
+
+
+
 
 for i in range(0, 50):
     print (bending_stress_function(y[i])/10**6)
